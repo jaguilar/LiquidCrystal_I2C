@@ -4,7 +4,10 @@
 
 #include <inttypes.h>
 
+#include <cstring>
+
 #include "hardware/i2c.h"
+
 
 // commands
 #define LCD_CLEARDISPLAY 0x01
@@ -81,9 +84,22 @@ class LiquidCrystal_I2C {
   void autoscroll();
   void noAutoscroll();
   void createChar(uint8_t, uint8_t[]);
-  
-  void setCursor(uint8_t, uint8_t); 
-  void write(uint8_t);
+
+  void setCursor(uint8_t, uint8_t);
+  bool write(uint8_t);
+  size_t write(const uint8_t *buffer, size_t size) {
+    size_t n = 0;
+    while (size--) {
+      if (write(*buffer++))
+        n++;
+      else
+        break;
+    }
+    return n;
+  }
+  size_t print(const char *str) {
+    return write((const uint8_t *)str, strlen(str));
+  }
   void command(uint8_t);
   void init();
   void oled_init();

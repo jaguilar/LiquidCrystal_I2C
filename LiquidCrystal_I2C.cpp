@@ -40,7 +40,7 @@ namespace {
 void delay(int ms) { vTaskDelay(pdMS_TO_TICKS(ms)); }
 
 inline void delayMicroseconds(int us) {
-  TickType_t ticks = pdMS_TO_TICKS(us * 1000);
+  const TickType_t ticks = pdMS_TO_TICKS(us / 1000);
   if (ticks < 1) {
     sleep_us(us);
   } else {
@@ -66,17 +66,17 @@ void LiquidCrystal_I2C::init() { init_priv(); }
 
 void LiquidCrystal_I2C::init_priv() {
   _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  begin(_cols, _rows);
+  begin(_rows);
 }
 
-void LiquidCrystal_I2C::begin(int text_lines, uint8_t dotsize) {
+void LiquidCrystal_I2C::begin(int text_lines, uint8_t charsize) {
   if (text_lines > 1) {
     _displayfunction |= LCD_2LINE;
   }
   _numlines = text_lines;
 
   // for some 1 line displays you can select a 10 pixel high font
-  if ((dotsize != 0) && (this->_rows == 1)) {
+  if ((charsize != 0) && (this->_rows == 1)) {
     _displayfunction |= LCD_5x10DOTS;
   }
 
@@ -252,13 +252,13 @@ void LiquidCrystal_I2C::write4bits(uint8_t value) {
 }
 
 void LiquidCrystal_I2C::expanderWrite(uint8_t data) {
-  write(data | _backlightval);
+  const uint8_t out = data | _backlightval;
+  i2c_write_blocking(i2c_, _addr, &out, sizeof(out), false);
 }
 
-void LiquidCrystal_I2C::write(uint8_t data) {
-  if (i2c_write_blocking(i2c_, _addr, &data, sizeof(data), false) < 1) {
-    printf("i2c write failed\n");
-  };
+bool LiquidCrystal_I2C::write(uint8_t data) {
+  send(data, Rs);
+  return true;
 }
 
 void LiquidCrystal_I2C::pulseEnable(uint8_t _data) {

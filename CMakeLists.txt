@@ -1,3 +1,4 @@
 
 add_library(LiquidCrystal_I2C EXCLUDE_FROM_ALL LiquidCrystal_I2C.cpp LiquidCrystal_I2C.h)
 target_link_libraries(LiquidCrystal_I2C PRIVATE hardware_i2c freertos pico_stdlib pico_time)
+target_include_directories(LiquidCrystal_I2C PUBLIC ${CMAKE_CURRENT_LIST_DIR})
